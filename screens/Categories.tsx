@@ -1,9 +1,10 @@
-import { Modal, Text, TextInput, TouchableOpacity, View } from 'react-native';
-import FontAwesome from '@expo/vector-icons/FontAwesome';
-import { ColorPicker, fromHsv, toHsv } from 'react-native-color-picker';
+import { Animated, Modal, Text, TextInput, TouchableHighlight, TouchableOpacity, View } from 'react-native';
+import { FontAwesome, EvilIcons } from '@expo/vector-icons';
+import { ColorPicker, fromHsv } from 'react-native-color-picker';
+import { GestureHandlerRootView, Swipeable, RectButton }  from 'react-native-gesture-handler';
 
 import { theme } from '../theme';
-import { useState } from 'react';
+import { useCallback, useState } from 'react';
 import { Category } from '../types/category';
 import { CategoryRow } from '../components/CategoryRow';
 
@@ -43,6 +44,54 @@ export const Categories = () => {
     setSelectedColor(theme.colors.primary);
   }
 
+  const renderRightActions = (progress, dragX, id) => {
+    // const trans = dragX.interpolate({
+    //   inputRange: [0, 1],
+    //   outputRange: [0, 0],
+    // });
+    const trans = progress.interpolate({
+      inputRange: [0, 1],
+      outputRange: [13, 0],
+    });
+
+    return (
+      <View
+        style={{
+          backgroundColor: theme.colors.error,
+          width: 75
+        }}
+      >
+        <RectButton
+          onPress={() => setCategories(categories.filter((category) => category.id !== id))}
+          style={{
+            flex: 1,
+            // display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+          }}
+        >
+          <EvilIcons name='trash' size={40} color='white' />
+        </RectButton>
+      </View>
+      // <Animated.View
+      //   style={{ flex: 1, transform: [{ translateX: trans }] }}
+      // >
+      //   <RectButton
+      //     onPress={() => console.log("close it")}
+      //     style={{
+      //       backgroundColor: theme.colors.error,
+      //       display: 'flex',
+      //       alignItems: 'center',
+      //       flex: 1,
+      //       justifyContent: 'center',
+      //     }}
+      //   >
+      //     <EvilIcons name='trash' size={40} color='white' />
+      //   </RectButton>
+      // </Animated.View>
+    );
+  };
+
   return (
     <>
       <View
@@ -58,7 +107,15 @@ export const Categories = () => {
           }}
         >
           { categories.map(({ id, color, name }) => (
-            <CategoryRow key={id} color={color} name={name} />
+            <GestureHandlerRootView key={id}>
+              <Swipeable
+                key={id}
+                onSwipeableOpen={() => {}}
+                renderRightActions={(progress, dragX) => renderRightActions(progress, dragX, id)}
+              >
+                <CategoryRow key={id} color={color} name={name} />
+              </Swipeable>
+            </GestureHandlerRootView>
           )) }
         </View>
         <View style={{ flex: 1 }} />
@@ -71,16 +128,6 @@ export const Categories = () => {
             alignItems: 'center',
           }}
         >
-          {/* <TouchableOpacity
-            style={{
-              display: 'flex',
-              alignItems: 'center',
-              justifyContent: 'center',
-              padding: 10
-            }}
-          >
-            <Text style={{ color: 'white' }}>COLOR</Text>
-          </TouchableOpacity> */}
           <TouchableOpacity onPress={() => setShowColorPicker(!showColorPicker)}>
             <View
               style={{
@@ -92,7 +139,6 @@ export const Categories = () => {
                 borderColor: 'white'
               }}
             >
-
             </View>
           </TouchableOpacity>
           <TextInput
